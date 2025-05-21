@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador Monte Carlo - Aproximación de π</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #result {
+      font-size: 1.5em;
+      margin: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Aproximación de π con Monte Carlo</h1>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <div id="result">π ≈ ...</div>
+  <button onclick="startSimulation()">Iniciar Simulación</button>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const result = document.getElementById('result');
+
+    const size = canvas.width;
+    const radius = size;
+
+    let insideCircle = 0;
+    let totalPoints = 0;
+
+    function drawPoint(x, y, isInside) {
+      ctx.fillStyle = isInside ? 'green' : 'red';
+      ctx.fillRect(x, y, 2, 2);
+    }
+
+    function generatePoint() {
+      const x = Math.random();
+      const y = Math.random();
+      const distance = x * x + y * y;
+
+      totalPoints++;
+      const isInside = distance <= 1;
+      if (isInside) insideCircle++;
+
+      const canvasX = x * size;
+      const canvasY = y * size;
+      drawPoint(canvasX, canvasY, isInside);
+    }
+
+    function startSimulation() {
+      insideCircle = 0;
+      totalPoints = 0;
+      ctx.clearRect(0, 0, size, size);
+
+      // Dibujar cuarto de círculo
+      ctx.beginPath();
+      ctx.arc(0, size, size, 0, Math.PI / 2);
+      ctx.stroke();
+
+      let iterations = 0;
+      const interval = setInterval(() => {
+        generatePoint();
+        iterations++;
+
+        if (iterations % 100 === 0) {
+          const piApprox = (insideCircle / totalPoints) * 4;
+          result.textContent = `π ≈ ${piApprox.toFixed(6)} (Puntos: ${totalPoints})`;
+        }
+
+        if (iterations >= 10000) {
+          clearInterval(interval);
+        }
+      }, 1);
+    }
+  </script>
+</body>
+</html>
