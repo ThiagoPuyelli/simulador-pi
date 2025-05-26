@@ -89,21 +89,27 @@
         return;
       }
 
-      // 📍 PASO 1: Generar números aleatorios → obtener eventos
+      // 📍 PASO 1: Plantear el modelo
+      // El modelo simula la relación geométrica entre un círculo inscrito en un cuadrado.
+      // Se basa en que el área del círculo respecto al cuadrado es π/4, por lo que:
+      // π ≈ 4 × (puntos dentro del círculo / puntos totales).
+      // Este planteamiento se traduce en la lógica del simulador Monte Carlo que sigue.
+
+      // 📍 PASO 2: Generar números aleatorios → obtener eventos
       const randX = Math.random();  // número aleatorio entre 0 y 1
       const randY = Math.random();  // número aleatorio entre 0 y 1
 
-      // 📍 PASO 2: Transformar esos números en entradas válidas (coordenadas)
+      // 📍 PASO 3: Transformar esos números en entradas válidas (coordenadas)
       const x = randX * width;   // escala al tamaño del canvas
       const y = randY * height;
 
-      // 📍 PASO 3: Operar el modelo → aplicar lógica (ver si el punto está en el círculo)
+      // 📍 PASO 4: Operar el modelo → aplicar lógica (ver si el punto está en el círculo)
       const dx = x - width / 2;
       const dy = y - height / 2;
       const distance = Math.sqrt(dx * dx + dy * dy);
       const isInside = distance <= radius;
 
-      // 📍 PASO 4: Contabilidad + estadística
+      // 📍 PASO 5: Contabilidad + estadística
       // Contar puntos válidos, calcular π y mostrar resultado
       drawPoint(x, y, isInside);
       totalPoints++;
