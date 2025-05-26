@@ -1,122 +1,83 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Simulador Monte Carlo - Aproximación de π</title>
-  <style>
-    canvas {
-      border: 1px solid #000;
-      margin-bottom: 10px;
+<!-- ... mismo código hasta aquí ... -->
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const result = document.getElementById('result');
+  const totalInput = document.getElementById('total');
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const radius = width / 2;
+
+  let insideCircle = 0;
+  let totalPoints = 0;
+  let targetPoints = 0;
+  let running = true;
+  let interval;
+
+  // Dibuja el círculo centrado (parte visual, no es parte directa de la metodología)
+  function drawCircle() {
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Dibuja un punto: verde si está dentro, rojo si está fuera
+  function drawPoint(x, y, isInside) {
+    ctx.fillStyle = isInside ? 'green' : 'red';
+    ctx.fillRect(x, y, 2, 2);
+  }
+
+  function togglePause() {
+    running = !running;
+    if (running) {
+      startInterval();
     }
-    body {
-      text-align: center;
-      font-family: sans-serif;
-    }
-    #controls {
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Simulación Monte Carlo para π</h1>
+  }
 
-  <canvas id="canvas" width="400" height="400"></canvas>
+  // Iniciar la simulación: prepara el entorno
+  function startSimulation() {
+    ctx.clearRect(0, 0, width, height);
+    drawCircle();
+    insideCircle = 0;
+    totalPoints = 0;
+    running = true;
+    targetPoints = parseInt(totalInput.value);
 
-  <div id="controls">
-    <label for="total">Cantidad de puntos:</label>
-    <input type="number" id="total" value="5000" min="100" step="100" />
-    <button onclick="startSimulation()">Iniciar</button>
-    <button onclick="togglePause()">
-      Pausar / Reanudar
-    </button>
-  </div>
+    startInterval();
+  }
 
-  <div id="result">π ≈ ...</div>
-
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const result = document.getElementById('result');
-    const totalInput = document.getElementById('total');
-
-    const width = canvas.width;
-    const height = canvas.height;
-    const radius = width / 2;
-
-    let insideCircle = 0;
-    let totalPoints = 0;
-    let targetPoints = 0;
-    let running = true;
-    let interval;
-
-    // Dibuja el círculo centrado
-    function drawCircle() {
-      ctx.beginPath();
-      ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // Dibuja un solo punto verde (dentro) o rojo (fuera del círculo)
-    function drawPoint(x, y, isInside) {
-      ctx.fillStyle = isInside ? 'green' : 'red';
-      ctx.fillRect(x, y, 2, 2);
-    }
-
-    // Pausar/reanudar
-    function togglePause() {
-      running = !running;
-      if (running) {
-        startInterval()
+  function startInterval() {
+    interval = setInterval(() => {
+      if (!running || totalPoints >= targetPoints) {
+        clearInterval(interval);
+        return;
       }
-    }
 
-    // Iniciar simulación
-    function startSimulation() {
-      ctx.clearRect(0, 0, width, height);
-      drawCircle();
-      insideCircle = 0;
-      totalPoints = 0;
-      running = true;
-      targetPoints = parseInt(totalInput.value);
+      // 📍 PASO 1: Generar números aleatorios → obtener eventos
+      const randX = Math.random();  // número aleatorio entre 0 y 1
+      const randY = Math.random();  // número aleatorio entre 0 y 1
 
-      // Cada pequeño paso del método está comentado aquí:
+      // 📍 PASO 2: Transformar esos números en entradas válidas (coordenadas)
+      const x = randX * width;   // escala al tamaño del canvas
+      const y = randY * height;
 
-      startInterval()
-    }
+      // 📍 PASO 3: Operar el modelo → aplicar lógica (ver si el punto está en el círculo)
+      const dx = x - width / 2;
+      const dy = y - height / 2;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const isInside = distance <= radius;
 
-    function startInterval () {
-      interval = setInterval(() => {
-        if (!running || totalPoints >= targetPoints) {
-          clearInterval(interval);
-          return;
-        }
-  
-        // Paso 1: Generar dos números aleatorios entre 0 y 1
-        const randX = Math.random();
-        const randY = Math.random();
-  
-        // Paso 2: Transformarlos en coordenadas dentro del canvas
-        const x = randX * width;
-        const y = randY * height;
-  
-        // Paso 3: Calcular la distancia desde el centro del círculo
-        const dx = x - width / 2;
-        const dy = y - height / 2;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-  
-        // Paso 4: Determinar si el punto cae dentro del círculo
-        const isInside = distance <= radius;
-  
-        // Paso 5: Dibujar y contar
-        drawPoint(x, y, isInside);
-        totalPoints++;
-        if (isInside) insideCircle++;
-  
-        // Paso 6: Calcular π ≈ 4 * (puntos dentro / total)
-        const piApprox = 4 * (insideCircle / totalPoints);
-        result.textContent = `π ≈ ${piApprox.toFixed(12)} (Puntos: ${totalPoints})`;
-      }, 1);
-    }
-  </script>
-</body>
-</html>
+      // 📍 PASO 4: Contabilidad + estadística
+      // Contar puntos válidos, calcular π y mostrar resultado
+      drawPoint(x, y, isInside);
+      totalPoints++;
+      if (isInside) insideCircle++;
+
+      const piApprox = 4 * (insideCircle / totalPoints);
+      result.textContent = `π ≈ ${piApprox.toFixed(12)} (Puntos: ${totalPoints})`;
+
+    }, 1);
+  }
+</script>
